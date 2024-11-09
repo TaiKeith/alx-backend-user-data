@@ -7,7 +7,6 @@ from typing import List, Tuple
 import logging
 import os
 import mysql.connector
-from mysql.connector.connection import MySQLConnection
 
 
 # Define the PII_FIELDS constant with important PII fields from `user_data.csv`
@@ -79,25 +78,21 @@ def get_logger() -> logging.Logger:
     return logger
 
 
-def get_db() -> MySQLConnection:
+def get_db() -> mysql.connector.connection.MySQLConnection:
     """
     Connects to a MySQL database using credentials from environment variables.
 
     Returns:
         MySQLConnection: A MySQL database connection object.
     """
-    # Retrieve database credentials from environment variables with defaults
-    db_username = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
-    db_password = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
+    db_user = os.getenv("PERSONAL_DATA_DB_USERNAME", "root")
+    password = os.getenv("PERSONAL_DATA_DB_PASSWORD", "")
     db_host = os.getenv("PERSONAL_DATA_DB_HOST", "localhost")
-    db_name = os.getenv("PERSONAL_DATA_DB_NAME")
-
-    # Connect to the database using mysql.connector
+    db_name = os.getenv("PERSONAL_DATA_DB_NAME", "")
     connection = mysql.connector.connect(
-        user=db_username,
-        password=db_password,
         host=db_host,
+        user=db_user,
+        password=password,
         database=db_name
     )
-
     return connection
