@@ -3,8 +3,12 @@
 Tasks module
 """
 import re
-from typing import List
+from typing import List, Tuple
 import logging
+
+
+# Define the PII_FIELDS constant with important PII fields from `user_data.csv`
+PII_FIELDS: Tuple[str, ...] = ("name", "email", "phone", "ssn", "password")
 
 
 def filter_datum(fields: List[str], redaction: str,
@@ -47,3 +51,26 @@ class RedactingFormatter(logging.Formatter):
                                   self.REDACTION,
                                   record.getMessage(), self.SEPARATOR)
         return super().format(record)
+
+
+def get_logger() -> logging.Logger:
+    """
+    Creates and configures a logger with a RedactingFormatter to
+    filter PII fields.
+
+    Returns:
+        logging.Logger: A configured logger object.
+    """
+    # Create a logger named "user_data"
+    logger = logging.getLogger("user_data")
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
+
+    # Create a StreamHandler with RedactingFormatter for logging output
+    handler = logging.StreamHandler()
+    handler.setFormatter(RedactingFormatter(fields=PII_FIELDS))
+
+    # Add the handler to the logger
+    logger.addHandler(handler)
+
+    return logger
