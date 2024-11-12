@@ -98,14 +98,15 @@ class BasicAuth(Auth):
         if user_pwd is None or not isinstance(user_pwd, str):
             return None
 
-        # Search for a user with the provided email
-        users = User.search({'email': user_email})
-        if not users:
-            return None
+        try:
+            # Search for a user with the provided email
+            users = User.search({'email': user_email})
+            if not users:
+                return None
 
-        user = users[0]
-        # Validate the password using User's is_valid_password method
-        if not user.is_valid_password(user_pwd):
+            for u in users:
+                if u.is_valid_password(user_pwd):
+                    return u
             return None
-
-        return user
+        except Exception:
+            return None
