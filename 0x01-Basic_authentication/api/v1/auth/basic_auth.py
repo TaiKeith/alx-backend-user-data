@@ -78,8 +78,20 @@ class BasicAuth(Auth):
             return None, None
 
         # Split on the first occurrence of ':' to get email and password
-        email, password = decoded_base64_authorization_header.split(":", 1)
-        return email, password
+        # email, password = decoded_base64_authorization_header.split(":", 1)
+        # return email, password
+
+        # Split the string into email and password
+        try:
+            u_credentials = decoded_base64_authorization_header.split(":", 1)
+            if len(u_credentials) != 2:
+                return None, None
+
+            user_email = u_credentials[0]
+            user_pwd = u_credentials[1]
+            return user_email, user_pwd
+        except Exception:
+            return None, None
 
     def user_object_from_credentials(
             self, user_email: str, user_pwd: str) -> TypeVar('User'):
