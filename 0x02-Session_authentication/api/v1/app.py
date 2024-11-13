@@ -44,19 +44,17 @@ def before_request():
     if not auth.require_auth(request.path, excluded_paths):
         return
 
-    # Check for authorization header
-    if auth.authorization_header(request) is None:
+    # Check for session cookie or authorization header, depending on auth type
+    cookie = auth.session_cookie(request)
+    if auth.authorization_header(request) is None and cookie is None:
         abort(401)
 
+    # Assign the current user to the request if using session/header-based auth
     request.current_user = auth.current_user(request)
 
     # Check if user is authorized
     if request.current_user is None:
         abort(403)
-
-    # Check if session cookie is missing
-    if auth.session_cookie(request) is None:
-        abort(401)
 
 
 @app.errorhandler(404)
