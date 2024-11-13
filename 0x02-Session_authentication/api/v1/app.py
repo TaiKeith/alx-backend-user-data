@@ -37,7 +37,8 @@ def before_request():
     # List of routes to exclude from authentication
     excluded_paths = ['/api/v1/status/',
                       '/api/v1/unauthorized/',
-                      '/api/v1/forbidden/']
+                      '/api/v1/forbidden/',
+                      '/api/v1/auth_session/login/']
 
     # Check if the request path requires authentication
     if not auth.require_auth(request.path, excluded_paths):
@@ -52,6 +53,10 @@ def before_request():
     # Check if user is authorized
     if request.current_user is None:
         abort(403)
+
+    # Check if session cookie is missing
+    if auth.session_cookie(request) is None:
+        abort(401)
 
 
 @app.errorhandler(404)
