@@ -61,16 +61,14 @@ class SessionExpAuth(SessionAuth):
             return None
 
         # Ensure session has a creation time
-        created_at = user_details.get("created_at")
-        if created_at is None:
+        if "created_at" not in user_details.keys():
             return None
 
-        # Check if session has expired
-        if self.session_duration > 0:
-            allowed_window = created_at + timedelta(seconds=self.session_duration)
-            if allowed_window < datetime.now():
-                # Clean up expired session
-                del self.user_id_by_session_id[session_id]
-                return None
+        if self.session_duration <= 0:
+            return user_details.get("user_id")
 
+        created_at = user_details.get("created_at")
+        allowed_window = created_at + timedelta(seconds=self.session_duration)
+        if allowed_window < datetime.now():
+            return None
         return user_details.get("user_id")
