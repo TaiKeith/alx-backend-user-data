@@ -3,38 +3,40 @@
 This module contains SessionDBAuth class for managing session IDs stored
 in the database.
 """
-from api.v1.auth.session_exp_auth import SessionExpAuth
+from .session_exp_auth import SessionExpAuth
 from models.user_session import UserSession
-from flask import request
+
 
 class SessionDBAuth(SessionExpAuth):
     """
-    SessionDBAuth extends SessionExpAuth to store sessions in a database.
+    Definition of SessionDBAuth class that persists session data
+    in a database
     """
+
     def create_session(self, user_id=None):
         """
-        Create a session for a user, saving it in the database.
+        Create a Session ID for a user_id
         Args:
-            user_id (str): The user's ID
-        Returns:
-            session_id (str): The created session ID, or None if creation failed.
+           user_id (str): user id
         """
         session_id = super().create_session(user_id)
-        if session_id is None:
+        if not session_id:
             return None
-
-        # Create and save the session to the database
-        user_session = UserSession(user_id=user_id, session_id=session_id)
-        user_session.save()
+        kw = {
+            "user_id": user_id,
+            "session_id": session_id
+        }
+        user = UserSession(**kw)
+        user.save()
         return session_id
 
     def user_id_for_session_id(self, session_id=None):
         """
-        Retrieve a user ID based on a session ID stored in the database.
+        Returns a user ID based on a session ID
         Args:
-            session_id (str): The session ID
-        Returns:
-            user_id (str): The ID of the user associated with the session ID, or None.
+            session_id (str): session ID
+        Return:
+            user id or None if session_id is None or not a string
         """
         user_id = UserSession.search({"session_id": session_id})
         if user_id:
@@ -43,24 +45,16 @@ class SessionDBAuth(SessionExpAuth):
 
     def destroy_session(self, request=None):
         """
-        Destroys the user session based on the session cookie from the request.
-        Args:
-            request (flask.Request): The incoming request
-        Returns:
-            bool: True if the session was successfully destroyed, False otherwise.
+        Destroy a UserSession instance based on a
+        Session ID from a request cookie
         """
         if request is None:
             return False
-
         session_id = self.session_cookie(request)
-        if session_id is None:
+        if not session_id:
             return False
-
-        # Find and delete the session from the database
-        sessions = UserSession.search({"session_id": session_id})
-        if not sessions:
-            return False
-
-        user_session = sessions[0]
-        user_session.remove()
-        return True
+        user_session = UserSession.search({"session_id": session_id})
+        if user_session:
+            user_session[0].remove()
+            return True
+        return False
