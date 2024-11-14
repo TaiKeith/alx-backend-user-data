@@ -13,6 +13,7 @@ class UserSession(Base):
         user_id (str): The ID of the user
         session_id (str): The session ID
     """
+
     def __init__(self, *args: list, **kwargs: dict):
         """
         Initialize UserSession with user_id and session_id
