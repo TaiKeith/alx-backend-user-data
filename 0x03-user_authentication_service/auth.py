@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-This module contains a method _hash_password that takes in a password as
-a string and returns bytes.
+This module contains methods and a class for handling user authentication.
 """
 import bcrypt
 from sqlalchemy.orm.exc import NoResultFound
@@ -19,9 +18,7 @@ def _hash_password(password: str) -> bytes:
     Returns:
         bytes: The salted hash of the password.
     """
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 
 class Auth:
@@ -49,6 +46,23 @@ class Auth:
             raise ValueError(f"User {email} already exists")
         except NoResultFound:
             # User doesn't exist; proceed to create one
-            hashed = _hash_password(password)
-            new_user = self._db.add_user(email, hashed)  # Create the user
+            hashed_password = _hash_password(password)
+            new_user = self._db.add_user(email, hashed_password)
             return new_user
+
+    def valid_login(self, email: str, password: str) -> bool:
+        """
+        Validate a user's login credentials.
+
+        Args:
+            email (str): user's email address.
+            password (str): user's password.
+        Return:
+            bool: True if credentials are correct, else False.
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+        except NoResultFound:
+            return False
+
+        return bcrypt.checkpw(password.encode('utf-8'), user.hashed_password)
