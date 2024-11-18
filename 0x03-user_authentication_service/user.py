@@ -38,4 +38,3 @@ class User(Base):
             str: A string showing the user's ID and email.
         """
         return f"<User(id={self.id}, email='{self.email}')>"
-
